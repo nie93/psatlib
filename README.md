@@ -14,7 +14,10 @@ PSAT "test.py" python
 ```
 
 
-##
+## Development Guide
+* [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)
+* Importing external packages (e.g. NumPy) is **NOT** recommended except for better computing performance. You may import external packages in your own scripts.
 
 
-##
+## List of Functions
+* get_busnum(ctype)
