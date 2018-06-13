@@ -10,7 +10,7 @@
 2. Open command window (`cmd.exe`), change directory to the Python script folder you used, then type in
 
 ```
-PSAT "test.py" python
+PSAT test.py python
 ```
 
 
