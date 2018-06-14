@@ -15,16 +15,32 @@ __description__ = "psatlib is an imported library designed for PSAT running with
 from psat_python27 import *
 error = psat_error()
 
-# Resets all load id as the same string "1"
+# Resets all load id as the ascending string of integers
 def reset_loadid():
+    counter = 1
     f = psat_comp_id(ctype.ld,1,'')
+    c = get_load_dat(f,error)
+    c.id = str(counter)
+    set_load_dat(f,c,error)
+    prev = get_load_dat(f,error)
     more = get_next_comp('mainsub',f,error)
     while more == True:
         c = get_load_dat(f,error)
-        c.id = "1"
+        if samebus(prev, c):
+            counter += 1
+        else:
+            counter = 1
+        c.id = str(counter)
         set_load_dat(f,c,error)
-        more = get_next_comp('mainsub',f,error)    
+        more = get_next_comp('mainsub',f,error)  
+        prev = c
 
+# Returns True if the two components are at the same bus
+def samebus(c1,c2):
+    if c1.bus == c2.bus:
+        return True
+    else:    
+        return False
 
 # Returns a list of bus numbers of certain type of components
 def get_busnum(ct):
