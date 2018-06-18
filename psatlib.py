@@ -3,7 +3,7 @@ psatlib -- An imported library designed for PSAT running with Python scripts.
 
 Created by Zhijie Nie (nie@ieee.org)
 Created on:         06/11/2018
-Last Modified on:   06/12/2018
+Last Modified on:   06/14/2018
 """
 __name__ = "psatlib"
 __version__ = "0.1"
@@ -53,7 +53,7 @@ def get_busnum(ct):
     bn.sort()
     return bn
 
-# Returns loads (designed for single load component)
+# Returns loads (designed for single load item/component)
 def get_loads(busnum):
     if type(busnum) == int:
         c = get_load_dat(busnum,"1",error)
@@ -68,7 +68,7 @@ def get_loads(busnum):
             mvar.append(c.cq[0])
     return {'p':mw, 'q':mvar}
 
-# Returns aggregated loads by area (designed for single load component)
+# Returns aggregated loads by area (designed for single load item/component)
 def get_aggloads_by_area(areanum):
     areanum = list(set(areanum))
     areanum.sort()
@@ -194,10 +194,6 @@ def rescale_gens(subsys):
         c.mvar = xq * c.mvar
         set_gen_dat(f,c,error)
         more = get_next_comp(subsys,f,error)
-    
-# Generates TSAT files for transient stability analysis (psb,dyr,swi,mon)
-def generate_tsa(path,psb,dyr,swi,mon):
-    return
 
 # Displays a list in PSAT message tab
 def disp_list(l):
@@ -231,16 +227,15 @@ def get_load_in_area(areanum):
         more = get_next_comp('mainsub',f,error)
     return {'p': mw, 'q':mvar}
     
-
 # Applys a set of changes to the imported case (inspired by MATPOWER)
 def apply_changes(lbl, chgtbl):
     chgid = [i for i, x in enumerate(chgtbl) if x[0] == lbl]
     for i in chgid:
-        areaload = get_load_in_area(chgtbl[i][2])
         # psat_msg('LABEL#%3d  %s  %2d %s  %s [%8.2f -> %8.2f]' \
         #          %(chgtbl[i][0], chgtbl[i][1], chgtbl[i][2], chgtbl[i][3], \
         #            chgtbl[i][4], areaload['p'], chgtbl[i][5]))
         if chgtbl[i][1] == 'AREALOAD':
+            areaload = get_load_in_area(chgtbl[i][2])
             bn = get_busnum_in_area(chgtbl[i][2])
             for bi in range(len(bn)):
                 c = get_load_dat(bn[bi], "1", error)
@@ -248,8 +243,85 @@ def apply_changes(lbl, chgtbl):
                     c.cp[0] = c.cp[0] * chgtbl[i][5] / areaload['p']
                 elif chgtbl[i][3] == 'PQ':
                     c.cp[0] = c.cp[0] * chgtbl[i][5] / areaload['p']
-                    c.cq[0] = c.cq[0] * chgtbl[i][5] / areaload['q']
+                    c.cq[0] = c.cq[0] * chgtbl[i][5] / areaload['p']
                 set_load_dat(bn[bi], "1", c, error)
         elif chgtbl[i][1] == 'BUSLOAD':
             return
+    return
+
+# Returns a list of components' ids of specified type whose bus numbers are in the list of bn
+def get_comp_id(ct,bn):
+    cid = []
+    if type(bn) != list:
+        bn = [bn]
+    f = psat_comp_id(ct,1,'')    
+    more = get_next_comp('mainsub',f,error)
+    while more == True:
+        if bool(set([f.bus,f.bus2, f.bus3, f.bus4]) & set(bn)):
+            cid.append(f)
+        more = get_next_comp('mainsub',f,error)
+    return cid
+
+# Returns a list of psat component data according to psat_comp_id
+def get_comp_dat(cid):  
+    c = []
+    if type(cid) != list:
+        cid = [cid]
+    for i in range(len(cid)):
+        if cid[i].type == ctype.bs:
+            c.append(get_bus_dat(cid[i],error))
+        elif cid[i].type == ctype.gen:
+            c.append(get_gen_dat(cid[i],error))
+        elif cid[i].type == ctype.ld:
+            c.append(get_load_dat(cid[i],error))
+        elif cid[i].type == ctype.fxsh:
+            c.append(get_fix_shunt_dat(cid[i],error))
+        elif cid[i].type == ctype.swsh:
+            c.append(get_sw_shunt_dat(cid[i],error))
+        elif cid[i].type == ctype.ln:
+            c.append(get_line_dat(cid[i],error))
+        elif cid[i].type == ctype.fxtr:
+            c.append(get_fx_trans_dat(cid[i],error))
+        elif cid[i].type == ctype.ultc:
+            c.append(get_2w_trans_dat(cid[i],error))
+        elif cid[i].type == ctype.twtr:
+            c.append(get_3w_trans_dat(cid[i],error))
+        elif cid[i].type == ctype.fxsc:
+            c.append(get_fx_sercomp_dat(cid[i],error))
+        elif cid[i].type == ctype.vrsc:
+            c.append(get_fx_sercomp_dat(cid[i],error))
+        elif cid[i].type == ctype.stcpr:
+            c.append(get_stcpr_dat(cid[i],error))
+        elif cid[i].type == ctype.dcbs:
+            c.append(get_dcbus_dat(cid[i],error))
+        elif cid[i].type == ctype.cnvrtr:
+            c.append(get_converter_dat(cid[i],error))
+        elif cid[i].type == ctype.vsc:
+            c.append(get_vsc_dat(cid[i],error))
+        elif cid[i].type == ctype.dcln:
+            c.append(get_dcline_dat(cid[i],error))
+        elif cid[i].type == ctype.dcbrkr:
+            c.append(get_dcbrkr_dat(cid[i],error))
+        elif cid[i].type == ctype.zseq:
+            c.append(get_z_seq_coupling_dat(cid[i],error))
+    return c
+
+# Returns a list of flow on transmission lines
+def get_branch_flow(brnum):
+    return
+
+# Returns a list of flow on fixed transformers
+def get_fxtr_flow(brnum):
+    return
+
+# Returns a list of flow on adjustable (two-winding) transformers
+def get_ultc_flow(brnum):
+    return
+
+# Returns a list of flow on three-winding transformers
+def get_twtr_flow(brnum):
+    return
+
+# Generates TSAT files for transient stability analysis (psb,dyr,swi,mon)
+def generate_tsa(path,psb,dyr,swi,mon):
     return
