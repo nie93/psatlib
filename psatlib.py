@@ -92,7 +92,8 @@ def set_bus_areas(areanum):
     else:
         nar_before = get_count_comp(ctype.ar,error)
         nar_after = len(set(areanum))
-        busnum = range(1,1+nb)
+        busnum = range(1,1+nb)            # Obselete
+        # busnum = get_busnum(ctype.bs)   # Not checked yet
         for i in range(nar_after - nar_before):
             newarea = psat_area_dat()
             newarea.number = nar_before + i + 1
@@ -136,7 +137,6 @@ def scale_loads(subsys, x):
     more = get_next_comp(subsys,f,error)
     while more == True:
         c = get_load_dat(f,error)
-        # c = get_load_dat(busnum[i],"1",error)
         c.cp[0] = x * c.cp[0]
         c.cq[0] = x * c.cq[0]
         set_load_dat(f,c,error)
@@ -194,6 +194,50 @@ def rescale_gens(subsys):
         c.mvar = xq * c.mvar
         set_gen_dat(f,c,error)
         more = get_next_comp(subsys,f,error)
+
+# Gets a list of maximum active power outputs for generators
+def get_gen_pmax(subsys):
+    pmax = []
+    f = psat_comp_id(ctype.gen,1,'')
+    more = get_next_comp(subsys,f,error)
+    while more == True:
+        c = get_gen_dat(f,error)
+        pmax.append(c.mwmax)
+        more = get_next_comp(subsys,f,error)
+    return pmax
+
+# Sets maximum active power outputs for generators
+def set_gen_pmax(subsys,pmax):
+    if len(pmax) != get_count_comp(ctype.gen,error):
+        psat_msg('Returned: The lenghth of `pmax` not equal the number of generators.')
+    else:
+        f = psat_comp_id(ctype.gen,1,'')
+        more = get_next_comp(subsys,f,error)
+        counter = -1
+        while more == True:
+            c = get_gen_dat(f,error)
+            counter += 1
+            c.mwmax = pmax[counter]
+            set_gen_dat(f,c,error)
+            more = get_next_comp(subsys,f,error)
+
+# Redispatches the generators according to the capacity (PMAX)
+def redispatch(subsys, mismatch, solve):
+    pmax = get_gen_pmax(subsys)
+    total_cap = sum(pmax)
+    f = psat_comp_id(ctype.gen,1,'')
+    more = get_next_comp(subsys,f,error)
+    counter = -1
+    while more == True:
+        c = get_gen_dat(f,error)
+        counter += 1
+        c.mwmax += mismatch * pmax[counter] / total_cap
+        set_gen_dat(f,c,error)
+        more = get_next_comp(subsys,f,error)
+    if solve:
+        psat_command(r'SetSolutionAlgorithm:NR',error)
+        psat_command(r'Solve',error)
+    return
 
 # Displays a list in PSAT message tab
 def disp_list(l):
@@ -308,6 +352,9 @@ def get_comp_dat(cid):
 
 # Returns a list of flow on transmission lines
 def get_branch_flow(brnum):
+    
+    bf = []
+
     return
 
 # Returns a list of flow on fixed transformers
