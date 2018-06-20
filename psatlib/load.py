@@ -5,7 +5,27 @@ __author__ = "Zhijie Nie"
 from psat_python27 import *
 
 error = psat_error()
-  
+
+# Resets all load id as the ascending string of integers
+def reset_loadid():
+    counter = 1
+    f = psat_comp_id(ctype.ld,1,'')
+    c = get_load_dat(f,error)
+    c.id = str(counter)
+    set_load_dat(f,c,error)
+    prev = get_load_dat(f,error)
+    more = get_next_comp('mainsub',f,error)
+    while more == True:
+        c = get_load_dat(f,error)
+        if samebus(prev, c):
+            counter += 1
+        else:
+            counter = 1
+        c.id = str(counter)
+        set_load_dat(f,c,error)
+        more = get_next_comp('mainsub',f,error)  
+        prev = c
+
 # Returns loads (designed for single load item/component)
 def get_loads(busnum):
     if type(busnum) == int:
@@ -132,18 +152,8 @@ def scale_loads(subsys, x):
 
 # Returns the summation of online loads 
 def get_sum_load(subsys):
-    mw = 0.
-    mvar = 0.
-    refmw = 0.
-    refmvar = 0.
-    f = psat_comp_id(ctype.ld,1,'')
-    more = get_next_comp(subsys,f,error)
-    while more == True:
-        c = get_load_dat(f,error)
-        if c.status:
-            mw += c.mw
-            mvar += c.mvar
-            refmw += c.refmw
-            refmvar += c.refmvar
-        more = get_next_comp(subsys,f,error)
+    mw = sum(get_load_prop(subsys,'PD'))
+    mvar = sum(get_load_prop(subsys,'QD'))
+    refmw = sum(get_load_prop(subsys,'PREF'))
+    refmvar = sum(get_load_prop(subsys,'QREF'))
     return {'p':mw, 'q':mvar, 'pref':refmw, 'qref':refmvar}

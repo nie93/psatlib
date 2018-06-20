@@ -6,7 +6,7 @@ from psat_python27 import *
 
 error = psat_error()
 
-# Returns the list of area numbers
+# Returns the list of area numbers (replaced by get_bus_prop(subsys,'AREA'))
 def get_areanum(busnum):
     area = []
     for i in range(len(busnum)):

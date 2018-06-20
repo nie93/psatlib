@@ -45,22 +45,22 @@ def apply_changes(lbl, chgtbl):
 
 # Redispatches the generators according to the capacity (PMAX)
 def redispatch(subsys, mismatch, solve):
-    psat_msg('inside system.py')
     pmax = get_gen_prop(subsys,'PMAX')
-    total_cap = sum(pmax)
+    tcap = sum(pmax)
     f = psat_comp_id(ctype.gen,1,'')
     more = get_next_comp(subsys,f,error)
     counter = -1
     if mismatch == None:
-        tload = get_sum_load(subsys)
-        mismatch = tload['p'] - tload['pref']
-        psat_msg('P = %8.2f, PREF = %8.2f, MISMATCH = %8.2f' %(tload['p'], tload['pref'], mismatch))
+        tload = sum(get_load_prop(subsys, 'PD'))
+        tloadref = sum(get_load_prop(subsys, 'PREF'))
+        mismatch = tload - tloadref
+        psat_msg('P = %8.2f MW, PREF = %8.2f MW, MISMATCH = %8.2f MW' %(tload, tloadref, mismatch))
     while more == True:
         c = get_gen_dat(f,error)
         counter += 1
         if c.status:
             at = get_bus_dat(c.bus,error)
-            c.mw += mismatch * pmax[counter] / total_cap
+            c.mw += mismatch * pmax[counter] / tcap
             if c.mw < c.mwmin:
                 c.mw = c.mwmin
             if c.mw > c.mwmax:

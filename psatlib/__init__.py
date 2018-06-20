@@ -15,26 +15,6 @@ __description__ = "psatlib is an imported library designed for PSAT running with
 from psat_python27 import *
 error = psat_error()
 
-# Resets all load id as the ascending string of integers
-def reset_loadid():
-    counter = 1
-    f = psat_comp_id(ctype.ld,1,'')
-    c = get_load_dat(f,error)
-    c.id = str(counter)
-    set_load_dat(f,c,error)
-    prev = get_load_dat(f,error)
-    more = get_next_comp('mainsub',f,error)
-    while more == True:
-        c = get_load_dat(f,error)
-        if samebus(prev, c):
-            counter += 1
-        else:
-            counter = 1
-        c.id = str(counter)
-        set_load_dat(f,c,error)
-        more = get_next_comp('mainsub',f,error)  
-        prev = c
-
 # Returns True if the two components are at the same bus
 def samebus(c1,c2):
     if c1.bus == c2.bus:
@@ -45,6 +25,8 @@ def samebus(c1,c2):
 # Solves the powerflow if the case is not solved
 def solve_if_not_solved():
     if get_solution_status() != 1:
+        psat_msg('Imported case is not solved, initializing powerflow solution using NR method.')
+        psat_command(r'SetSolutionAlgorithm:NR',error)
         psat_command(r'Solve',error)
     if get_solution_status() != 1:
         psat_msg('Returned: Powerflow solution failed, initial powerflow case returned')
@@ -66,7 +48,7 @@ def disp_comp_msg(ct):
         psat_msg(msg_str)
         more = get_next_comp('mainsub',f,error)
 
-# Returns the summation of fixed shunt reactive power injection
+# Returns the summation of fixed shunt reactive power injection (will be replaced by get_fxsh_prop())
 def get_sum_fxshmvar(subsys):
     mvar = 0.
     f = psat_comp_id(ctype.fxsh,1,'')
