@@ -88,18 +88,17 @@ def get_aggloads_by_area(areanum):
 def set_bus_areas(areanum):
     nb = get_count_comp(ctype.bs,error)
     if nb != len(areanum):
-        return
+        psat_msg('Returned: The lenghth of `areanum` not equal the number of buses.')
     else:
         nar_before = get_count_comp(ctype.ar,error)
         nar_after = len(set(areanum))
-        busnum = range(1,1+nb)            # Obselete
-        # busnum = get_busnum(ctype.bs)   # Not checked yet
+        busnum = get_busnum(ctype.bs)
         for i in range(nar_after - nar_before):
-            newarea = psat_area_dat()
+            newarea = get_area_dat(1,error)
             newarea.number = nar_before + i + 1
             newarea.name = str(nar_before + i + 1)
             add_comp(newarea,error)
-        for i in range(len(areanum)):
+        for i in range(nb):
             busdat = get_bus_dat(busnum[i],error)
             loaddat = get_load_dat(busnum[i],"1",error)
             busdat.area = areanum[i]
@@ -146,14 +145,18 @@ def scale_loads(subsys, x):
 def get_sum_load(subsys):
     mw = 0.
     mvar = 0.
+    refmw = 0.
+    refmvar = 0.
     f = psat_comp_id(ctype.ld,1,'')
     more = get_next_comp(subsys,f,error)
     while more == True:
-        loaddat = get_load_dat(f,error)
-        mw += loaddat.mw
-        mvar += loaddat.mvar
+        c = get_load_dat(f,error)
+        mw += c.mw
+        mvar += c.mvar
+        refmw += c.refmw
+        refmvar += c.refmvar
         more = get_next_comp(subsys,f,error)
-    return {'p':mw, 'q':mvar}
+    return {'p':mw, 'q':mvar, 'pref':refmw, 'qref':refmvar}
 
 # Returns the summation of generators outputs
 def get_sum_genoutput(subsys):
@@ -195,21 +198,40 @@ def rescale_gens(subsys):
         set_gen_dat(f,c,error)
         more = get_next_comp(subsys,f,error)
 
-# Gets a list of maximum active power outputs for generators
-def get_gen_pmax(subsys):
-    pmax = []
+# Gets a list of values of specified property for generators
+def get_gen_prop(subsys,t):
+    p = []
     f = psat_comp_id(ctype.gen,1,'')
     more = get_next_comp(subsys,f,error)
     while more == True:
         c = get_gen_dat(f,error)
-        pmax.append(c.mwmax)
+        if t == 'BUS':
+            p.append(c.bus)
+        elif t == 'GENID':
+            p.append(c.id)
+        elif t == 'STATUS':
+            p.append(c.status)
+        elif t == 'BASEMVA':
+            p.append(c.basemva)
+        elif t == 'PG':
+            p.append(c.mw)
+        elif t == 'PMAX':
+            p.append(c.mwmax)
+        elif t == 'PMIN':
+            p.append(c.mwmin)
+        elif t == 'QG':
+            p.append(c.mvar)
+        elif t == 'QMAX':
+            p.append(c.mvarmax)
+        elif t == 'QMIN':
+            p.append(c.mvarmin)
         more = get_next_comp(subsys,f,error)
-    return pmax
+    return p
 
-# Sets maximum active power outputs for generators
-def set_gen_pmax(subsys,pmax):
-    if len(pmax) != get_count_comp(ctype.gen,error):
-        psat_msg('Returned: The lenghth of `pmax` not equal the number of generators.')
+# Sets the values of specified property for generators
+def set_gen_prop(subsys,t,pset):
+    if len(pset) != get_count_comp(ctype.gen,error):
+        psat_msg('Returned: The lenghth of `pset` not equal the number of generators.')
     else:
         f = psat_comp_id(ctype.gen,1,'')
         more = get_next_comp(subsys,f,error)
@@ -217,22 +239,48 @@ def set_gen_pmax(subsys,pmax):
         while more == True:
             c = get_gen_dat(f,error)
             counter += 1
-            c.mwmax = pmax[counter]
+            if t == 'STATUS':
+                c.status = pset[counter]
+            elif t == 'BASEMVA':
+                c.basemva = pset[counter]
+            elif t == 'PG':
+                c.mw = pset[counter]
+            elif t == 'PMAX':
+                c.mwmax = pset[counter]
+            elif t == 'PMIN':
+                c.mwmin = pset[counter]
+            elif t == 'QG':
+                c.mvar = pset[counter]
+            elif t == 'QMAX':
+                c.mvarmax = pset[counter]
+            elif t == 'QMIN':
+                c.mvarmin = pset[counter]           
             set_gen_dat(f,c,error)
             more = get_next_comp(subsys,f,error)
 
 # Redispatches the generators according to the capacity (PMAX)
 def redispatch(subsys, mismatch, solve):
-    pmax = get_gen_pmax(subsys)
+    pmax = get_gen_prop(subsys,'PMAX')
     total_cap = sum(pmax)
     f = psat_comp_id(ctype.gen,1,'')
     more = get_next_comp(subsys,f,error)
     counter = -1
+    if mismatch == None:
+        tload = get_sum_load(subsys)
+        mismatch = tload['p'] - tload['pref']
+        psat_msg('P = %8.2f, PREF = %8.2f, MISMATCH = %8.2f' %(tload['p'], tload['pref'], mismatch))
     while more == True:
         c = get_gen_dat(f,error)
         counter += 1
-        c.mwmax += mismatch * pmax[counter] / total_cap
-        set_gen_dat(f,c,error)
+        if c.status:
+            at = get_bus_dat(c.bus,error)
+            c.mw += mismatch * pmax[counter] / total_cap
+            if c.mw < c.mwmin:
+                c.mw = c.mwmin
+            if c.mw > c.mwmax:
+                c.mw = c.mwmax            
+            if at.type != 3:
+                set_gen_dat(f,c,error)
         more = get_next_comp(subsys,f,error)
     if solve:
         psat_command(r'SetSolutionAlgorithm:NR',error)
@@ -273,22 +321,35 @@ def get_load_in_area(areanum):
     
 # Applys a set of changes to the imported case (inspired by MATPOWER)
 def apply_changes(lbl, chgtbl):
+    """
+    Example of `chgtbl`:
+    chgtbl = [[1, 'AREALOAD',  1,     'PQ', 'REP', 1000.], 
+              [1, 'AREALOAD',  2,     'PQ', 'REP',  600.],
+              [1, 'AREALOAD',  3,     'PQ', 'REP',  800.],
+              [2,      'GEN', 10, 'STATUS', 'REP',    0 ],
+              [2,     'LINE', 10, 'STATUS', 'REP',    0 ]]
+    """
     chgid = [i for i, x in enumerate(chgtbl) if x[0] == lbl]
     for i in chgid:
-        # psat_msg('LABEL#%3d  %s  %2d %s  %s [%8.2f -> %8.2f]' \
-        #          %(chgtbl[i][0], chgtbl[i][1], chgtbl[i][2], chgtbl[i][3], \
-        #            chgtbl[i][4], areaload['p'], chgtbl[i][5]))
         if chgtbl[i][1] == 'AREALOAD':
             areaload = get_load_in_area(chgtbl[i][2])
+            psat_msg('LABEL#%3d  %s  %2d %s  %s [%8.2f -> %8.2f]' \
+                     %(chgtbl[i][0], chgtbl[i][1], chgtbl[i][2], chgtbl[i][3], \
+                     chgtbl[i][4], areaload['p'], chgtbl[i][5]))
             bn = get_busnum_in_area(chgtbl[i][2])
             for bi in range(len(bn)):
                 c = get_load_dat(bn[bi], "1", error)
-                if chgtbl[i][3] == 'P':
-                    c.cp[0] = c.cp[0] * chgtbl[i][5] / areaload['p']
-                elif chgtbl[i][3] == 'PQ':
-                    c.cp[0] = c.cp[0] * chgtbl[i][5] / areaload['p']
-                    c.cq[0] = c.cq[0] * chgtbl[i][5] / areaload['p']
-                set_load_dat(bn[bi], "1", c, error)
+                if c.status:
+                    if chgtbl[i][3] == 'P':
+                        c.cp[0] = c.cp[0] * chgtbl[i][5] / areaload['p']
+                    elif chgtbl[i][3] == 'PQ':
+                        c.cp[0] = c.cp[0] * chgtbl[i][5] / areaload['p']
+                        c.cq[0] = c.cq[0] * chgtbl[i][5] / areaload['p']
+                    set_load_dat(bn[bi], "1", c, error)
+        elif chgtbl[i][1] == 'GEN':
+            return
+        elif chgtbl[i][1] == 'LINE':
+            return
         elif chgtbl[i][1] == 'BUSLOAD':
             return
     return
@@ -350,11 +411,71 @@ def get_comp_dat(cid):
             c.append(get_z_seq_coupling_dat(cid[i],error))
     return c
 
+
+# Gets a list of values of specified property for generators
+def get_load_prop(subsys,t):
+    p = []
+    f = psat_comp_id(ctype.ld,1,'')
+    more = get_next_comp(subsys,f,error)
+    while more == True:
+        c = get_load_dat(f,error)
+        if t == 'BUS':
+            p.append(c.bus)
+        elif t == 'LOADID':
+            p.append(c.id)
+        elif t == 'STATUS':
+            p.append(c.status)
+        elif t == 'AREA':
+            p.append(c.basemva)
+        elif t == 'PREF':
+            p.append(c.refmw)
+        elif t == 'QREF':
+            p.append(c.refmvar)
+        elif t == 'PNOM':
+            p.append(c.nommw)
+        elif t == 'QNOM':
+            p.append(c.nommvar)
+        elif t == 'PD':
+            p.append(c.mw)
+        elif t == 'QD':
+            p.append(c.mvar)
+        more = get_next_comp(subsys,f,error)
+    return p
+
+# Sets the values of specified property for loads
+def set_load_prop(subsys,t,pset):
+    if len(pset) != get_count_comp(ctype.ld,error):
+        psat_msg('Returned: The lenghth of `pset` not equal the number of loads.')
+    else:
+        f = psat_comp_id(ctype.ld,1,'')
+        more = get_next_comp(subsys,f,error)
+        counter = -1
+        while more == True:
+            c = get_load_dat(f,error)
+            counter += 1
+            if t == 'STATUS':
+                c.status = pset[counter]
+            elif t == 'AREA':
+                c.area = pset[counter]
+            elif t == 'PREF':
+                c.refmw = pset[counter]
+            elif t == 'QREF':
+                c.refmvar = pset[counter]
+            elif t == 'PNOM':
+                c.nommw = pset[counter]
+            elif t == 'QNOM':
+                c.nommvar = pset[counter]
+            elif t == 'PD':
+                c.mw = pset[counter]
+            elif t == 'QD':
+                c.mvar = pset[counter]
+            set_load_dat(f,c,error)
+            more = get_next_comp(subsys,f,error)
+
+
 # Returns a list of flow on transmission lines
 def get_branch_flow(brnum):
-    
     bf = []
-
     return
 
 # Returns a list of flow on fixed transformers
@@ -371,4 +492,8 @@ def get_twtr_flow(brnum):
 
 # Generates TSAT files for transient stability analysis (psb,dyr,swi,mon)
 def generate_tsa(path,psb,dyr,swi,mon):
+    return
+
+# Generates VSAT files for transient stability analysis (psb,dyr,swi,mon)
+def generate_vsa():
     return

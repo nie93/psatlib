@@ -16,12 +16,16 @@ num_of_gens = get_count_comp(ctype.gen,error)
 
 busnum = get_busnum(ctype.bs)
 load0 = get_loads(busnum)
+pgen = get_gen_prop('mainsub', 'PG')
+pload = get_load_prop('mainsub', 'PD')
 
 psat_msg('      Number of Buses: %3d' %num_of_buses)
 psat_msg('      Number of Loads: %3d' %num_of_loads)
 psat_msg('      Number of Areas: %3d' %num_of_areas)
 psat_msg(' Number of Generators: %3d' %num_of_gens)
-
+psat_msg('                 PGEN: %s' %str(pgen))
+psat_msg('                PLOAD: %s' %str(pload))
+psat_msg('---------------------------------------------------')
 psat_msg('[BUSNUM, PLOAD, QLOAD]')
 l = [busnum, load0['p'], load0['q']]
 l = map(list, zip(*l))
@@ -43,4 +47,5 @@ load_compobj = get_comp_dat(load_idobj)
 
 psat_msg(str(type(load_compobj[0])))
 
+psat_command(r'SaveMessagesToFile:"psat_msg.txt"', error)
 # psat_command(r'CloseProject',error)
