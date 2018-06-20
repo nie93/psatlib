@@ -53,19 +53,71 @@ def get_busnum(ct):
     bn.sort()
     return bn
 
+# Solves the powerflow if the case is not solved
+def solve_if_not_solved():
+    if get_solution_status() != 1:
+        psat_command(r'Solve',error)
+    if get_solution_status() != 1:
+        psat_msg('Returned: Powerflow solution failed, initial powerflow case returned')
+    return get_solution_status()
+
+# Returns a list of values of specified property for buses
+def get_bus_prop(subsys,t):
+    p = []
+    f = psat_comp_id(ctype.bs,1,'')
+    more = get_next_comp(subsys,f,error)
+    while more == True:
+        c = get_bus_dat(f,error)
+        if t == 'NUMBER':
+            p.append(c.number)
+        elif t == 'NAME':
+            p.append(c.name)
+        elif t == 'BASEKV':
+            p.append(c.basekv)
+        elif t == 'TYPE':
+            p.append(c.type)
+        elif t == 'VM':
+            solve_if_not_solved()
+            p.append(c.vmag)
+        elif t == 'VA':
+            solve_if_not_solved()
+            p.append(c.vang)
+        elif t == 'VREAL':
+            solve_if_not_solved()
+            p.append(c.vreal)
+        elif t == 'VIMAG':
+            solve_if_not_solved()
+            p.append(c.vimag)
+        elif t == 'AREA':
+            p.append(c.area)
+        elif t == 'ZONE':
+            p.append(c.zone)
+        elif t == 'OWNER':
+            p.append(c.owner)
+        more = get_next_comp(subsys,f,error)
+    return p
+    
 # Returns loads (designed for single load item/component)
 def get_loads(busnum):
     if type(busnum) == int:
         c = get_load_dat(busnum,"1",error)
-        mw = c.cp[0]
-        mvar = c.cq[0]
+        if c.status:
+            mw = c.mw
+            mvar = c.mw
+        else:
+            mw = 0.
+            mvar = 0.
     else:
         mw = []
         mvar = []
         for i in range(len(busnum)):
             c = get_load_dat(busnum[i],"1",error)
-            mw.append(c.cp[0])
-            mvar.append(c.cq[0])
+            if c.status:
+                mw.append(c.mw)
+                mvar.append(c.mw)
+            else:
+                mw.append(0)
+                mvar.append(0)
     return {'p':mw, 'q':mvar}
 
 # Returns aggregated loads by area (designed for single load item/component)
@@ -141,7 +193,7 @@ def scale_loads(subsys, x):
         set_load_dat(f,c,error)
         more = get_next_comp(subsys,f,error)
 
-# Returns the summation of loads 
+# Returns the summation of online loads 
 def get_sum_load(subsys):
     mw = 0.
     mvar = 0.
@@ -151,10 +203,11 @@ def get_sum_load(subsys):
     more = get_next_comp(subsys,f,error)
     while more == True:
         c = get_load_dat(f,error)
-        mw += c.mw
-        mvar += c.mvar
-        refmw += c.refmw
-        refmvar += c.refmvar
+        if c.status:
+            mw += c.mw
+            mvar += c.mvar
+            refmw += c.refmw
+            refmvar += c.refmvar
         more = get_next_comp(subsys,f,error)
     return {'p':mw, 'q':mvar, 'pref':refmw, 'qref':refmvar}
 
@@ -288,7 +341,9 @@ def redispatch(subsys, mismatch, solve):
     return
 
 # Displays a list in PSAT message tab
-def disp_list(l):
+def disp_list(l,transpose=0):
+    if transpose:
+        l = map(list, zip(*l))
     for i in range(len(l)):
         psat_msg(str(l[i]))
 
@@ -314,8 +369,8 @@ def get_load_in_area(areanum):
     while more == True:
         c = get_load_dat(f,error)
         if (c.area == areanum and c.status == 1):
-            mw += c.cp[0]
-            mvar += c.cq[0]
+            mw += c.mw
+            mvar += c.mw
         more = get_next_comp('mainsub',f,error)
     return {'p': mw, 'q':mvar}
     
@@ -411,7 +466,6 @@ def get_comp_dat(cid):
             c.append(get_z_seq_coupling_dat(cid[i],error))
     return c
 
-
 # Gets a list of values of specified property for generators
 def get_load_prop(subsys,t):
     p = []
@@ -471,7 +525,6 @@ def set_load_prop(subsys,t,pset):
                 c.mvar = pset[counter]
             set_load_dat(f,c,error)
             more = get_next_comp(subsys,f,error)
-
 
 # Returns a list of flow on transmission lines
 def get_branch_flow(brnum):
