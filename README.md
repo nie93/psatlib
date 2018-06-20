@@ -5,7 +5,7 @@
 
 
 ## How To Use It (Command Line Interface)
-1. Copy `psatlib.py` to your PSAT's python userscripts directory (e.g. `C:\DSATools_18-SL\Psat\bin\python\UserScripts`).
+1. Copy the whole folder of `psatlib` to your PSAT's python userscripts directory (e.g. `C:\DSATools_18-SL\Psat\bin\python\UserScripts`).
 
 2. Open command window (`cmd.exe`), change directory to the Python script folder you used, then type in
 
