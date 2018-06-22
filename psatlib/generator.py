@@ -82,7 +82,7 @@ def set_gen_prop(subsys,t,pset):
             set_gen_dat(f,c,error)
             more = get_next_comp(subsys,f,error)
 
-# Returns the summation of generators outputs
+# Returns the summation of generators outputs (will be replaced)
 def get_sum_genoutput(subsys):
     mw = 0.
     mvar = 0.

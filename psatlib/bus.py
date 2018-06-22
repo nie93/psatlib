@@ -65,8 +65,8 @@ def set_bus_areas(areanum):
         for i in range(nar_after - nar_before):
             newarea = get_area_dat(1,error)
             newarea.number = nar_before + i + 1
-            newarea.name = str(nar_before + i + 1)
-            add_comp(newarea,error)
+            newarea.name = str(newarea.number)
+            psat_command(r'InsertData:Area;%d;%s;Disabled;No;Null;0;1' %(newarea.number,newarea.name),error)
         for i in range(nb):
             busdat = get_bus_dat(busnum[i],error)
             loaddat = get_load_dat(busnum[i],"1",error)

@@ -1,11 +1,15 @@
 from psat_python import *
 from UserScripts.psatlib import *
+from psat_python import *
+from UserScripts.psatlib import *
 from UserScripts.psatlib.area import *
 from UserScripts.psatlib.bus import *
+from UserScripts.psatlib.contingency import *
 from UserScripts.psatlib.generator import *
-# from UserScripts.psatlib.line import *
+from UserScripts.psatlib.line import *
 from UserScripts.psatlib.load import *
-# from UserScripts.psatlib.system import *
+from UserScripts.psatlib.system import *
+
 
 disable_engine_messages(True)
 error = psat_error()
@@ -38,11 +42,10 @@ def disp_system_basics():
     psat_msg('------------------------------------------------')
 
 
-
-psat_command(r'OpenPowerflow:"C:\\DSATools_18-SL\\Psat\\samples\\test.pfb"',error)
-# psat_command(r'OpenPowerflow:"C:\\DSATools_18-SL\\Tsat\\compload\\compload.pfb"',error)
-reset_loadid()
-psat_command(r'Solve',error)
+casefile_path = r'C:\\DSATools_18-SL\\Psat\\samples'
+casefile_name = r'test'
+psat_command('OpenPowerflow:"%s\\%s.pfb"' %(casefile_path, casefile_name), error)
+solve_if_not_solved()
 
 num_of_buses = get_count_comp(ctype.bs,error)
 num_of_loads = get_count_comp(ctype.ld,error)
@@ -83,5 +86,11 @@ load_compobj = get_comp_dat(load_idobj)
 
 psat_msg(str(type(load_compobj[0])))
 
-psat_command(r'SaveMessagesToFile:"psat_msg.txt"', error)
-# psat_command(r'CloseProject',error)
+
+linectg = define_line_ctg('mainsub')
+disp_list(linectg)
+ctg2xml(casefile_path + r'\\contingencies.xml', linectg)
+
+
+psat_command('SaveMessagesToFile:"%s\\psat_msg.txt"' %casefile_path, error)
+psat_command(r'CloseProject',error)
