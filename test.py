@@ -1,11 +1,9 @@
 from psat_python import *
 from UserScripts.psatlib import *
-from psat_python import *
-from UserScripts.psatlib import *
 from UserScripts.psatlib.area import *
 from UserScripts.psatlib.bus import *
-from UserScripts.psatlib.contingency import *
 from UserScripts.psatlib.generator import *
+from UserScripts.psatlib.io import *
 from UserScripts.psatlib.line import *
 from UserScripts.psatlib.load import *
 from UserScripts.psatlib.system import *
@@ -86,11 +84,11 @@ load_compobj = get_comp_dat(load_idobj)
 
 psat_msg(str(type(load_compobj[0])))
 
-
+# region [Defines Contingencies and export as XML files]
 linectg = define_line_ctg('mainsub')
 disp_list(linectg)
 ctg2xml(casefile_path + r'\\contingencies.xml', linectg)
-
+# endregion
 
 psat_command('SaveMessagesToFile:"%s\\psat_msg.txt"' %casefile_path, error)
 psat_command(r'CloseProject',error)
