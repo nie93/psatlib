@@ -62,9 +62,9 @@ def get_sum_fxshmvar(subsys):
 # Displays a list in PSAT message tab
 def disp_list(l,transpose=0):
     if transpose:
-        l = map(list, zip(*l))
-    for i in range(len(l)):
-        psat_msg(str(l[i]))
+        l = list(zip(*l))
+    for i in l:
+        psat_msg(str(i))
 
 # Returns a list of components' ids of specified type whose bus numbers are in the list of bn
 def get_comp_id(ct,bn):

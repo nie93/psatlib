@@ -59,7 +59,7 @@ def get_line_prop(subsys,t):
         elif t == 'PTO':
             p.append(c.pto)
         elif t == 'QTO':
-            p.append(c.pto)
+            p.append(c.qto)
         elif t == 'ITO':
             p.append(c.ito)
         more = get_next_comp(subsys,f,error)

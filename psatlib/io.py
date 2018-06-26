@@ -28,9 +28,11 @@ def ctg2xml(filename, ctg):
         f.write(xmlstr)
         psat_msg('Contingencies are saved in: %s' %str(filename))
 
-def list2csv(filename, l, transpose=0):
+def list2csv(filename, l, transpose=0, header=None):
     if transpose:
-        l = map(list, zip(*l))
+        l = list(zip(*l))
     with open(filename, 'wb') as f:
         wr = csv.writer(f, lineterminator='\n')
+        if header is not None:
+            wr.writerow(header)
         wr.writerows(l)

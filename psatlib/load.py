@@ -156,4 +156,40 @@ def get_sum_load(subsys):
     mvar = sum(get_load_prop(subsys,'QD'))
     refmw = sum(get_load_prop(subsys,'PREF'))
     refmvar = sum(get_load_prop(subsys,'QREF'))
-    return {'p':mw, 'q':mvar, 'pref':refmw, 'qref':refmvar}
+    return {'p':mw, 'q':mvar, 'pref':refmw, 'qref':refmvar}\
+
+# Sets constPQ load to ZIP load model at specified buses
+def pq2zip(busnum, param):
+    for i in busnum:
+        c = get_load_dat(i,"1",error)
+        p0 = c.cp[0]
+        q0 = c.cq[0]
+        c.cm[1] = -2
+        c.cm[2] = -3
+        c.cp[0] = p0 * param['kp']
+        c.cp[1] = p0 * param['ki']
+        c.cp[2] = p0 * param['kz']
+        c.cq[0] = q0 * param['kp']
+        c.cq[1] = q0 * param['ki']
+        c.cq[2] = q0 * param['kz']
+        c = set_load_dat(i,"1",c,error)
+
+# Applies ZIP-load at specified bus
+def apply_zipload(busnum, param):
+    for i in busnum:
+        c = get_load_dat(i,"1",error)
+        p0 = c.cp[0]
+        q0 = c.cq[0]
+        c.cm[1] = -1
+        c.cm[2] = -2
+        c.cm[3] = -3
+        c.cp[1] = p0 * param['kp']
+        c.cp[2] = p0 * param['ki']
+        c.cp[3] = p0 * param['kz']
+        c.cq[1] = q0 * param['kp']
+        c.cq[2] = q0 * param['ki']
+        c.cq[3] = q0 * param['kz']
+        c = set_load_dat(i,"1",c,error)
+
+
+    

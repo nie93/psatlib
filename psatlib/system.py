@@ -16,7 +16,9 @@ def apply_changes(lbl, chgtbl):
               [1, 'AREALOAD',  2,     'PQ', 'REP',  600.],
               [1, 'AREALOAD',  3,     'PQ', 'REP',  800.],
               [2,      'GEN', 10, 'STATUS', 'REP',    0 ],
-              [2,     'LINE', 10, 'STATUS', 'REP',    0 ]]
+              [2,     'LINE', 10, 'STATUS', 'REP',    0 ],
+              [3,     'LOAD',  5,      'P', 'REL', 0.90 ],
+              [3,     'LOAD', 11,     'PQ', 'REL', 0.95 ]]
     """
     chgid = [i for i, x in enumerate(chgtbl) if x[0] == lbl]
     for i in chgid:
@@ -35,11 +37,24 @@ def apply_changes(lbl, chgtbl):
                         c.cp[0] = c.cp[0] * chgtbl[i][5] / areaload['p']
                         c.cq[0] = c.cq[0] * chgtbl[i][5] / areaload['p']
                     set_load_dat(bn[bi], "1", c, error)
+        elif chgtbl[i][1] == 'LOAD':
+            c = get_load_dat(chgtbl[i][2], "1", error)
+            if chgtbl[i][4] == 'REL':
+                if chgtbl[i][3] == 'P':
+                    c.cp[0] = c.refmw * chgtbl[i][5]
+                elif chgtbl[i][3] == 'PQ':
+                    c.cp[0] = c.refmw * chgtbl[i][5]
+                    c.cq[0] = c.refmvar * chgtbl[i][5]
+            elif chgtbl[i][4] == 'REP':
+                if chgtbl[i][3] == 'P':
+                    c.cp[0] = chgtbl[i][5]
+                elif chgtbl[i][3] == 'PQ':
+                    c.cp[0] = chgtbl[i][5]
+                    c.cq[0] = chgtbl[i][5] * c.cq[0] / c.cp[0]
+            set_load_dat(chgtbl[i][2], "1", c, error)
         elif chgtbl[i][1] == 'GEN':
             return
         elif chgtbl[i][1] == 'LINE':
-            return
-        elif chgtbl[i][1] == 'BUSLOAD':
             return
     return
 
@@ -72,3 +87,40 @@ def redispatch(subsys, mismatch, solve):
         psat_command(r'SetSolutionAlgorithm:NR',error)
         psat_command(r'Solve',error)
     return
+
+# Creates snapshot of current powerflow result
+def create_snapshot(r):
+    l = []
+    if 'Bus' in r.keys():
+        for i in r['Bus']:
+            l.append(get_bus_prop('mainsub', i))
+    if 'Load' in r.keys():
+        for i in r['Load']:
+            l.append(get_load_prop('mainsub', i))
+    if 'Line' in r.keys():
+        for i in r['Line']:
+            l.append(get_line_prop('mainsub', i))            
+    flattened = [val for sublist in l for val in sublist]
+    return flattened
+
+def create_snapshot_header(r):
+    h = []
+    if 'Bus' in r.keys():
+        busnum = get_bus_prop('mainsub', 'NUMBER')
+        for i in r['Bus']:
+            h.append(['Bus_' + str(val) + '_' + i  for val in busnum])
+    if 'Load' in r.keys():
+        busnum = get_load_prop('mainsub', 'BUS')
+        for i in r['Load']:
+            h.append(['Load_' + str(val) + '_' + i for val in busnum])
+    if 'Line' in r.keys():
+        frbus = get_line_prop('mainsub', 'FRBUS')
+        tobus = get_line_prop('mainsub', 'TOBUS')
+        lid = get_line_prop('mainsub', 'LINEID')
+        lhdr = []
+        for k in r['Line']:
+            for i in range(len(frbus)):
+                lhdr.append('Line_%d_%d_%s_%s' %(frbus[i], tobus[i], lid[i], k))
+        h.append(lhdr)
+    flattened = [val for sublist in h for val in sublist]
+    return flattened
