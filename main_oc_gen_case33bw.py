@@ -39,13 +39,12 @@ def create_chgtbl(busnum, n, exclude=None):
     chgtbl = []
     for i in range(n):
         for bi in busnum:
+			rndscale = random.uniform(1.5, 0.4)
+            # rndscale = random.uniform(0.9, 1.1)
             if exclude is not None:
                 if bi not in exclude:
-                    rndscale = random.uniform(1, 0.2)
-                    # rndscale = random.uniform(0.9, 1.1)
                     chgtbl.append([i+1, 'LOAD', bi, 'PQ', 'REL', rndscale])
             else:
-                rndscale = random.uniform(0.9, 1.1)
                 chgtbl.append([i+1, 'LOAD', bi, 'PQ', 'REL', rndscale])
     return chgtbl
 
@@ -96,7 +95,6 @@ zipload_busnum = [18]
 
 
 num_of_cases = int(5e1)
-chgtbl = create_chgtbl(loadbusnum, num_of_cases)
 
 queried = {'Bus':['VM'], \
            'Load':['PD', 'QD'], \
@@ -104,21 +102,23 @@ queried = {'Bus':['VM'], \
 
 hdr = create_snapshot_header(queried)
 
-loglist = []
-for i in range(num_of_cases):
-    apply_changes(i+1, chgtbl)
-    solve_if_not_solved()
-    loglist.append(create_snapshot(queried))
-list2csv(r'%s\\%s\\prezip_snapshots.csv' %(casefile_path, output_folder), loglist, 0, hdr)
+for kk in range(4):
+	chgtbl = create_chgtbl(loadbusnum, num_of_cases)
 
-loglist = []
-for i in range(num_of_cases):
-    apply_changes(i+1, chgtbl)
-    apply_zipload(zipload_busnum, {'kp': 0.5, 'ki': 0.25, 'kz': 0.25})
-    solve_if_not_solved()
-    loglist.append(create_snapshot(queried))
+	loglist = []
+	for i in range(num_of_cases):
+		apply_changes(i+1, chgtbl)
+		solve_if_not_solved()
+		loglist.append(create_snapshot(queried))
+	list2csv(r'%s\\%s\\test_prezip_snapshots_%02d.csv' %(casefile_path, output_folder, kk+1), loglist, 0, hdr)
 
-list2csv(r'%s\\%s\\postzip_snapshots.csv' %(casefile_path, output_folder), loglist, 0, hdr)
+	loglist = []
+	for i in range(num_of_cases):
+		apply_changes(i+1, chgtbl)
+		apply_zipload(zipload_busnum, {'kp': 0.5, 'ki': 0.25, 'kz': 0.25})
+		solve_if_not_solved()
+		loglist.append(create_snapshot(queried))
+	list2csv(r'%s\\%s\\test_postzip_snapshots_%02d.csv' %(casefile_path, output_folder, kk+1), loglist, 0, hdr)
 
 
 psat_msg(r'================= DONE TESTING =================')

@@ -45,6 +45,10 @@ def apply_changes(lbl, chgtbl):
                 elif chgtbl[i][3] == 'PQ':
                     c.cp[0] = c.refmw * chgtbl[i][5]
                     c.cq[0] = c.refmvar * chgtbl[i][5]
+                if c.cp[0] < 0:
+                    c.cp[0] = 0
+                if c.cq[0] < 0:
+                    c.cq[0] = 0
             elif chgtbl[i][4] == 'REP':
                 if chgtbl[i][3] == 'P':
                     c.cp[0] = chgtbl[i][5]
