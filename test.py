@@ -87,7 +87,7 @@ psat_msg(str(type(load_compobj[0])))
 # region [Defines Contingencies and export as XML files]
 linectg = define_line_ctg('mainsub')
 disp_list(linectg)
-ctg2xml(casefile_path + r'\\contingencies.xml', linectg)
+ctg2xml(casefile_path + r'\\output\\contingencies.xml', linectg)
 # endregion
 
 psat_command('SaveMessagesToFile:"%s\\psat_msg.txt"' %casefile_path, error)
