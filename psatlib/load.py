@@ -175,11 +175,13 @@ def pq2zip(busnum, param):
         c = set_load_dat(i,"1",c,error)
 
 # Applies ZIP-load at specified bus
-def apply_zipload(busnum, param):
+def apply_zipload(busnum, param, replace=False):
     for i in busnum:
         c = get_load_dat(i,"1",error)
         p0 = c.cp[0]
         q0 = c.cq[0]
+        if replace:
+            c.cm[0] = 0
         c.cm[1] = -1
         c.cm[2] = -2
         c.cm[3] = -3
@@ -190,6 +192,3 @@ def apply_zipload(busnum, param):
         c.cq[2] = q0 * param['ki']
         c.cq[3] = q0 * param['kz']
         c = set_load_dat(i,"1",c,error)
-
-
-    

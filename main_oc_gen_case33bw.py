@@ -39,7 +39,7 @@ def create_chgtbl(busnum, n, exclude=None):
     chgtbl = []
     for i in range(n):
         for bi in busnum:
-			rndscale = random.uniform(1.5, 0.4)
+            rndscale = random.gauss(1.5, 0.4)
             # rndscale = random.uniform(0.9, 1.1)
             if exclude is not None:
                 if bi not in exclude:
