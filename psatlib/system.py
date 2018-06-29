@@ -57,13 +57,17 @@ def apply_changes(lbl, chgtbl):
                     c.cq[0] = chgtbl[i][5] * c.cq[0] / c.cp[0]
             set_load_dat(chgtbl[i][2], "1", c, error)
         elif chgtbl[i][1] == 'GEN':
-            return
+            c = get_gen_dat(chgtbl[i][2], "1", error)
+            if chgtbl[i][4] == 'REP':
+                if chgtbl[i][3] == 'STATUS':
+                    c.status = 0
+            set_gen_dat(chgtbl[i][2], "1", c, error)
         elif chgtbl[i][1] == 'LINE':
             return
     return
 
 # Redispatches the generators according to the capacity (PMAX)
-def redispatch(subsys, mismatch, solve):
+def redispatch(subsys, mismatch, solve=False):
     pmax = get_gen_prop(subsys,'PMAX')
     tcap = sum(pmax)
     f = psat_comp_id(ctype.gen,1,'')
@@ -95,6 +99,8 @@ def redispatch(subsys, mismatch, solve):
 # Creates snapshot of current powerflow result
 def create_snapshot(r):
     l = []
+    if 'Solved' in r.keys():
+        l.append(str(get_solution_status()))
     if 'Bus' in r.keys():
         for i in r['Bus']:
             l.append(get_bus_prop('mainsub', i))
@@ -109,6 +115,8 @@ def create_snapshot(r):
 
 def create_snapshot_header(r):
     h = []
+    if 'Solved' in r.keys():
+        h.append(['SOLVED'])
     if 'Bus' in r.keys():
         busnum = get_bus_prop('mainsub', 'NUMBER')
         for i in r['Bus']:
