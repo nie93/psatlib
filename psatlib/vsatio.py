@@ -2,32 +2,37 @@
 
 __author__ = "Zhijie Nie"
 
+import os
+import fnmatch
+
+
 # Writes VSADAT Files for Batch Run
-def write_vsadat(filename, pfbprefix, n):
-    with open(filename, 'wb') as f:
-        for i in range(n):
-            f.write('1\n')
-            name = '%s_%03d' %(pfbprefix, i+1)
-            f.write(name + '\n')
-            f.write('%s.snr\n' %name)
+def write_vsadat(filename, filepath):
+    with open('%s\\%s' %(filepath, filename), 'wb') as f:        
+        for name in os.listdir(filepath):
+            if fnmatch.fnmatch(name, '*.snr'):
+                f.write('1\n')
+                f.write(name.replace('.snr', '') + '\n')
+                f.write('%s\n' %name)
     f.close()
     return       
 
 # Writes Scenario Files
-def write_snr(filepath, pfbprefix, prmprefix, n):
-    for i in range(n):
-        name = '%s_%03d' %(pfbprefix, i+1) 
-        with open(filepath + '\\%s.snr' %name, 'wb') as f:
-            f.write("[VSAT 5.x Scenario]\n")
-            f.write("{Description}\n")
-            f.write("  %s\n" %name)
-            f.write("{End Description}\n\n")
-            f.write("PFB File = '%s.pfb'\n" %name)
-            f.write("Parameter File = '%s.prm'\n" %prmprefix)
-            f.write("Transfer File = '%s.trf'\n" %prmprefix)
-            f.write("Contingency File = '%s.ctg'\n" %prmprefix)
-            f.write("[End]")
-            f.close()
+def write_snr(filepath, prmprefix):
+    for name in os.listdir(filepath):
+        if fnmatch.fnmatch(name, '*.pfb'):
+            name = name.replace('.pfb', '')
+            with open(filepath + '\\%s.snr' %name, 'wb') as f:
+                f.write("[VSAT 5.x Scenario]\n")
+                f.write("{Description}\n")
+                f.write("  %s\n" %name)
+                f.write("{End Description}\n\n")
+                f.write("PFB File = '%s.pfb'\n" %name)
+                f.write("Parameter File = '%s.prm'\n" %prmprefix)
+                f.write("Transfer File = '%s.trf'\n" %prmprefix)
+                f.write("Contingency File = '%s.ctg'\n" %prmprefix)
+                f.write("[End]")
+                f.close()
     return
 
     # [VSAT 5.x Scenario]
