@@ -33,16 +33,12 @@ def get_bus_prop(subsys,t):
         elif t == 'TYPE':
             p.append(c.type)
         elif t == 'VM':
-            solve_if_not_solved()
             p.append(c.vmag)
         elif t == 'VA':
-            solve_if_not_solved()
             p.append(c.vang)
         elif t == 'VREAL':
-            solve_if_not_solved()
             p.append(c.vreal)
         elif t == 'VIMAG':
-            solve_if_not_solved()
             p.append(c.vimag)
         elif t == 'AREA':
             p.append(c.area)

@@ -3,7 +3,7 @@ psatlib -- An imported library designed for PSAT running with Python scripts.
 
 Created by Zhijie Nie (nie@ieee.org)
 Created on:         06/11/2018
-Last Modified on:   06/27/2018
+Last Modified on:   07/06/2018
 """
 __name__ = "psatlib"
 __version__ = "0.1"
@@ -15,6 +15,17 @@ __description__ = "psatlib is an imported library designed for PSAT running with
 from psat_python27 import *
 error = psat_error()
 
+# Sets customized PSAT solving environment variables
+def set_psat_env(algo='NR', iter=20, failopt=0, flat=False, msgdisabled=False):
+    psat_command(r'SetSolutionAlgorithm:%s' %algo, error)
+    psat_command(r'SetSolutionParameter:MaxIterations;%d' %iter, error)
+    psat_command(r'SetSolutionParameter:SolutionTolerance;1', error)
+    if flat:
+        psat_command(r'SetSolutionParameter:FlatStart;FLAT', error)        
+    set_solution_failure_option(failopt)
+    disable_engine_messages(msgdisabled)
+    return
+
 # Returns True if the two components are at the same bus
 def samebus(c1,c2):
     if c1.bus == c2.bus:
@@ -24,7 +35,7 @@ def samebus(c1,c2):
 
 # Solves the powerflow if the case is not solved
 def solve_if_not_solved():
-    if get_solution_status() != 1:
+    if get_solution_status() == 0:
         psat_msg('Imported case is not solved, initializing powerflow solution using NR method.')
         psat_command(r'SetSolutionAlgorithm:NR',error)
         psat_command(r'Solve',error)

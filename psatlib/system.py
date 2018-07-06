@@ -100,7 +100,7 @@ def redispatch(subsys, mismatch, solve=False):
 def create_snapshot(r):
     l = []
     if 'Solved' in r.keys():
-        l.append(str(get_solution_status()))
+        l.append([get_solution_status()])
     if 'Bus' in r.keys():
         for i in r['Bus']:
             l.append(get_bus_prop('mainsub', i))
@@ -109,7 +109,7 @@ def create_snapshot(r):
             l.append(get_load_prop('mainsub', i))
     if 'Line' in r.keys():
         for i in r['Line']:
-            l.append(get_line_prop('mainsub', i))            
+            l.append(get_line_prop('mainsub', i))         
     flattened = [val for sublist in l for val in sublist]
     return flattened
 
