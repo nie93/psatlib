@@ -3,8 +3,10 @@
 __author__ = "Zhijie Nie"
 
 from psat_python27 import *
-from . import bus
-from . import load
+from .bus import *
+from .load import *
+from .line import *
+
 
 error = psat_error()
 
@@ -134,5 +136,6 @@ def create_snapshot_header(r):
             for i in range(len(frbus)):
                 lhdr.append('Line_%d_%d_%s_%s' %(frbus[i], tobus[i], lid[i], k))
         h.append(lhdr)
+	
     flattened = [val for sublist in h for val in sublist]
     return flattened
