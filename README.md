@@ -25,6 +25,14 @@ PSAT test.py python
 
 ## Known Bugs
 
+### PSAT Powerflow Solution Limit
+PSAT limits 3,224 powerflow solving commands within each batch.
+
+
+### VSAT GUI Display Limit
+VSAT GUI limits 2,476 scenarios in display. Use `vsat_batch` for running with a large amount of scenarios.
+
+
 ### Problem with Python 2.7.x Environment
 PSAT GUI returns RunTime Error or could not open `psatPython27.dll` if Python 2.7 is installed by 64-bit MSI installer.
 
