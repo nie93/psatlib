@@ -28,9 +28,14 @@ PSAT test.py python
 ### PSAT Powerflow Solution Limit
 PSAT limits 3,224 powerflow solving commands within each batch.
 
+#### Solution
+Use multiple Windows batch files to execute different Python scripts in parallel. Maximum number of sessions on each workstation is 5.
 
 ### VSAT GUI Display Limit
-VSAT GUI limits 2,476 scenarios in display. Use `vsat_batch` for running with a large amount of scenarios.
+VSAT GUI limits 2,476 scenarios in display. 
+
+#### Solution
+Use `vsat_batch` for running with a large amount of scenarios.
 
 
 ### Problem with Python 2.7.x Environment
