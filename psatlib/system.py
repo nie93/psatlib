@@ -41,23 +41,24 @@ def apply_changes(lbl, chgtbl):
                     set_load_dat(bn[bi], "1", c, error)
         elif chgtbl[i][1] == 'LOAD':
             c = get_load_dat(chgtbl[i][2], "1", error)
-            if chgtbl[i][4] == 'REL':
-                if chgtbl[i][3] == 'P':
-                    c.cp[0] = c.refmw * chgtbl[i][5]
-                elif chgtbl[i][3] == 'PQ':
-                    c.cp[0] = c.refmw * chgtbl[i][5]
-                    c.cq[0] = c.refmvar * chgtbl[i][5]
-                if c.cp[0] < 0:
-                    c.cp[0] = 0
-                if c.cq[0] < 0:
-                    c.cq[0] = 0
-            elif chgtbl[i][4] == 'REP':
-                if chgtbl[i][3] == 'P':
-                    c.cp[0] = chgtbl[i][5]
-                elif chgtbl[i][3] == 'PQ':
-                    c.cp[0] = chgtbl[i][5]
-                    c.cq[0] = chgtbl[i][5] * c.cq[0] / c.cp[0]
-            set_load_dat(chgtbl[i][2], "1", c, error)
+            if c.status:
+                if chgtbl[i][4] == 'REL':
+                    if chgtbl[i][3] == 'P':
+                        c.cp[0] = c.refmw * chgtbl[i][5]
+                    elif chgtbl[i][3] == 'PQ':
+                        c.cp[0] = c.refmw * chgtbl[i][5]
+                        c.cq[0] = c.refmvar * chgtbl[i][5]
+                    if c.cp[0] < 0:
+                        c.cp[0] = 0
+                    if c.cq[0] < 0:
+                        c.cq[0] = 0
+                elif chgtbl[i][4] == 'REP':
+                    if chgtbl[i][3] == 'P':
+                        c.cp[0] = chgtbl[i][5]
+                    elif chgtbl[i][3] == 'PQ':
+                        c.cp[0] = chgtbl[i][5]
+                        c.cq[0] = chgtbl[i][5] * c.cq[0] / c.cp[0]
+                set_load_dat(chgtbl[i][2], "1", c, error)
         elif chgtbl[i][1] == 'GEN':
             c = get_gen_dat(chgtbl[i][2], "1", error)
             if chgtbl[i][4] == 'REP':
@@ -69,30 +70,46 @@ def apply_changes(lbl, chgtbl):
     return
 
 # Redispatches the generators according to the capacity (PMAX)
-def redispatch(subsys, mismatch, solve=False):
+def redispatch(subsys='mainsub', pgref=None, solve=False):
     pmax = get_gen_prop(subsys,'PMAX')
     tcap = sum(pmax)
     f = psat_comp_id(ctype.gen,1,'')
     more = get_next_comp(subsys,f,error)
     counter = -1
-    if mismatch == None:
-        tload = sum(get_load_prop(subsys, 'PD'))
+    tload = sum(get_load_prop(subsys, 'PD'))
+    if pgref == None:
         tloadref = sum(get_load_prop(subsys, 'PREF'))
         mismatch = tload - tloadref
         psat_msg('P = %8.2f MW, PREF = %8.2f MW, MISMATCH = %8.2f MW' %(tload, tloadref, mismatch))
-    while more == True:
-        c = get_gen_dat(f,error)
-        counter += 1
-        if c.status:
-            at = get_bus_dat(c.bus,error)
-            c.mw += mismatch * pmax[counter] / tcap
-            if c.mw < c.mwmin:
-                c.mw = c.mwmin
-            if c.mw > c.mwmax:
-                c.mw = c.mwmax            
-            if at.type != 3:
-                set_gen_dat(f,c,error)
-        more = get_next_comp(subsys,f,error)
+        while more == True:
+            c = get_gen_dat(f,error)
+            counter += 1
+            if c.status:
+                at = get_bus_dat(c.bus,error)
+                c.mw += mismatch * pmax[counter] / tcap
+                if c.mw < c.mwmin:
+                    c.mw = c.mwmin
+                if c.mw > c.mwmax:
+                    c.mw = c.mwmax            
+                if at.type != 3:
+                    set_gen_dat(f,c,error)
+            more = get_next_comp(subsys,f,error)
+    else:
+        mismatch = tload - sum(pgref)
+        psat_msg('P = %8.2f MW, PREF = %8.2f MW, MISMATCH = %8.2f MW' %(tload, sum(pgref), mismatch))
+        while more == True:
+            c = get_gen_dat(f,error)
+            counter += 1
+            if c.status:
+                at = get_bus_dat(c.bus,error)
+                c.mw = pgref[counter] + mismatch * pmax[counter] / tcap
+                if c.mw < c.mwmin:
+                    c.mw = c.mwmin
+                if c.mw > c.mwmax:
+                    c.mw = c.mwmax            
+                if at.type != 3:
+                    set_gen_dat(f,c,error)
+            more = get_next_comp(subsys,f,error)
     if solve:
         psat_command(r'SetSolutionAlgorithm:NR',error)
         psat_command(r'Solve',error)
