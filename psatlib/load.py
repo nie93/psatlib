@@ -80,32 +80,33 @@ def get_load_in_area(areanum):
     return {'p': mw, 'q':mvar}
 
 # Gets a list of values of specified property for generators
-def get_load_prop(subsys,t):
+def get_load_prop(subsys, t, exclude=[]):
     p = []
     f = psat_comp_id(ctype.ld,1,'')
     more = get_next_comp(subsys,f,error)
     while more == True:
         c = get_load_dat(f,error)
-        if t == 'BUS':
-            p.append(c.bus)
-        elif t == 'LOADID':
-            p.append(c.id)
-        elif t == 'STATUS':
-            p.append(c.status)
-        elif t == 'AREA':
-            p.append(c.basemva)
-        elif t == 'PREF':
-            p.append(c.refmw)
-        elif t == 'QREF':
-            p.append(c.refmvar)
-        elif t == 'PNOM':
-            p.append(c.nommw)
-        elif t == 'QNOM':
-            p.append(c.nommvar)
-        elif t == 'PD':
-            p.append(c.mw)
-        elif t == 'QD':
-            p.append(c.mvar)
+        if c.bus not in exclude:
+            if t == 'BUS':
+                p.append(c.bus)
+            elif t == 'LOADID':
+                p.append(c.id)
+            elif t == 'STATUS':
+                p.append(c.status)
+            elif t == 'AREA':
+                p.append(c.basemva)
+            elif t == 'PREF':
+                p.append(c.refmw)
+            elif t == 'QREF':
+                p.append(c.refmvar)
+            elif t == 'PNOM':
+                p.append(c.nommw)
+            elif t == 'QNOM':
+                p.append(c.nommvar)
+            elif t == 'PD':
+                p.append(c.mw)
+            elif t == 'QD':
+                p.append(c.mvar)
         more = get_next_comp(subsys,f,error)
     return p
 

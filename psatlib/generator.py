@@ -23,34 +23,69 @@ def rescale_gens(subsys):
         more = get_next_comp(subsys,f,error)
 
 # Gets a list of values of specified property for generators
-def get_gen_prop(subsys,t):
+def get_gen_prop(subsys,t, exclude=[]):
     p = []
     f = psat_comp_id(ctype.gen,1,'')
     more = get_next_comp(subsys,f,error)
     while more == True:
         c = get_gen_dat(f,error)
-        if t == 'BUS':
-            p.append(c.bus)
-        elif t == 'GENID':
-            p.append(c.id)
-        elif t == 'STATUS':
-            p.append(c.status)
-        elif t == 'BASEMVA':
-            p.append(c.basemva)
-        elif t == 'PG':
-            p.append(c.mw)
-        elif t == 'PMAX':
-            p.append(c.mwmax)
-        elif t == 'PMIN':
-            p.append(c.mwmin)
-        elif t == 'QG':
-            p.append(c.mvar)
-        elif t == 'QMAX':
-            p.append(c.mvarmax)
-        elif t == 'QMIN':
-            p.append(c.mvarmin)
+        if c.bus not in exclude:
+            if t == 'BUS':
+                p.append(c.bus)
+            elif t == 'GENID':
+                p.append(c.id)
+            elif t == 'STATUS':
+                p.append(c.status)
+            elif t == 'BASEMVA':
+                p.append(c.basemva)
+            elif t == 'PG':
+                p.append(c.mw)
+            elif t == 'PMAX':
+                p.append(c.mwmax)
+            elif t == 'PMIN':
+                p.append(c.mwmin)
+            elif t == 'QG':
+                p.append(c.mvar)
+            elif t == 'QMAX':
+                p.append(c.mvarmax)
+            elif t == 'QMIN':
+                p.append(c.mvarmin)
         more = get_next_comp(subsys,f,error)
     return p
+
+
+# Gets a list of values of specified properties for generators
+def get_gen_props(subsys,*args):
+    l = []
+    f = psat_comp_id(ctype.gen,1,'')
+    more = get_next_comp(subsys,f,error)
+    while more == True:
+        c = get_gen_dat(f,error)
+        p = []
+        for t in args:
+            if t == 'BUS':
+                p.append(c.bus)
+            elif t == 'GENID':
+                p.append(c.id)
+            elif t == 'STATUS':
+                p.append(c.status)
+            elif t == 'BASEMVA':
+                p.append(c.basemva)
+            elif t == 'PG':
+                p.append(c.mw)
+            elif t == 'PMAX':
+                p.append(c.mwmax)
+            elif t == 'PMIN':
+                p.append(c.mwmin)
+            elif t == 'QG':
+                p.append(c.mvar)
+            elif t == 'QMAX':
+                p.append(c.mvarmax)
+            elif t == 'QMIN':
+                p.append(c.mvarmin)
+        l.append(p)
+        more = get_next_comp(subsys,f,error)
+    return l
 
 # Sets the values of specified property for generators
 def set_gen_prop(subsys,t,pset):

@@ -70,43 +70,81 @@ def apply_changes(lbl, chgtbl):
     return
 
 # Redispatches the generators according to the capacity (PMAX)
-def redispatch(subsys='mainsub', pgref=None, solve=False):
-    pmax = get_gen_prop(subsys,'PMAX')
-    tcap = sum(pmax)
-    f = psat_comp_id(ctype.gen,1,'')
-    more = get_next_comp(subsys,f,error)
-    counter = -1
-    tload = sum(get_load_prop(subsys, 'PD'))
-    if pgref == None:
-        tloadref = sum(get_load_prop(subsys, 'PREF'))
-        mismatch = tload - tloadref
-        psat_msg('P = %8.2f MW, PREF = %8.2f MW, MISMATCH = %8.2f MW' %(tload, tloadref, mismatch))
-        while more == True:
-            c = get_gen_dat(f,error)
-            counter += 1
-            if c.status:
-                at = get_bus_dat(c.bus,error)
-                c.mw += mismatch * pmax[counter] / tcap
-                if c.mw < c.mwmin:
-                    c.mw = c.mwmin
-                if c.mw > c.mwmax:
-                    c.mw = c.mwmax            
-                if at.type != 3:
-                    set_gen_dat(f,c,error)
-            more = get_next_comp(subsys,f,error)
+def redispatch(subsys='mainsub', pgref=None, transfer=None, solve=False):
+    if transfer is None:
+        pmax = get_gen_prop(subsys,'PMAX')
+        tcap = sum(pmax)
+        f = psat_comp_id(ctype.gen,1,'')
+        more = get_next_comp(subsys,f,error)
+        counter = -1
+        tload = sum(get_load_prop(subsys, 'PD'))
+        if pgref is None:
+            tloadref = sum(get_load_prop(subsys, 'PREF'))
+            mismatch = tload - tloadref
+            psat_msg('P = %8.2f MW, PREF = %8.2f MW, MISMATCH = %8.2f MW' %(tload, tloadref, mismatch))
+            while more == True:
+                c = get_gen_dat(f,error)
+                counter += 1
+                if c.status:
+                    at = get_bus_dat(c.bus,error)
+                    c.mw += mismatch * pmax[counter] / tcap
+                    if c.mw < c.mwmin:
+                        c.mw = c.mwmin
+                    if c.mw > c.mwmax:
+                        c.mw = c.mwmax            
+                    if at.type != 3:
+                        set_gen_dat(f,c,error)
+                more = get_next_comp(subsys,f,error)
+        else:
+            mismatch = tload - sum(pgref)
+            psat_msg('P = %8.2f MW, PREF = %8.2f MW, MISMATCH = %8.2f MW' %(tload, sum(pgref), mismatch))
+            while more == True:
+                c = get_gen_dat(f,error)
+                counter += 1
+                if c.status:
+                    at = get_bus_dat(c.bus,error)
+                    c.mw = pgref[counter] + mismatch * pmax[counter] / tcap
+                    if c.mw < c.mwmin:
+                        c.mw = c.mwmin
+                    if c.mw > c.mwmax:
+                        c.mw = c.mwmax            
+                    if at.type != 3:
+                        set_gen_dat(f,c,error)
+                more = get_next_comp(subsys,f,error)
     else:
-        mismatch = tload - sum(pgref)
-        psat_msg('P = %8.2f MW, PREF = %8.2f MW, MISMATCH = %8.2f MW' %(tload, sum(pgref), mismatch))
+        exc_gbus = [gbus for item in transfer for gbus in item[1]]
+        exc_lbus = [item[0] for item in transfer]
+        
+        pmax = get_gen_prop(subsys,'PMAX')
+        tcap = sum(pmax)
+        tload = sum(get_load_prop(subsys, 'PD'))
+        restcap = sum(get_gen_prop(subsys,'PMAX', exc_gbus))
+        restload = sum(get_load_prop(subsys, 'PD', exc_lbus))
+        restpgref = [item[1] for item in pgref if item[0] not in exc_gbus]
+        mismatch = restload - sum(restpgref)
+        psat_msg('P = %8.2f MW, PREF = %8.2f MW, MISMATCH = %8.2f MW' %(restload, sum(restpgref), mismatch))
+
+        f = psat_comp_id(ctype.gen,1,'')
+        more = get_next_comp(subsys,f,error)
         while more == True:
             c = get_gen_dat(f,error)
-            counter += 1
             if c.status:
+                pg = [item[1] for item in pgref if item[0] == c.bus]
                 at = get_bus_dat(c.bus,error)
-                c.mw = pgref[counter] + mismatch * pmax[counter] / tcap
-                if c.mw < c.mwmin:
-                    c.mw = c.mwmin
-                if c.mw > c.mwmax:
-                    c.mw = c.mwmax            
+                if c.bus in exc_gbus:
+                    lbus = [lb for lb,gb in transfer if c.bus in gb]
+                    load = get_load_dat(lbus[0], '1', error)
+                    c.mw = pg[0] * load.mw / load.refmw 
+                    if c.mw < c.mwmin:
+                        c.mw = c.mwmin
+                    if c.mw > c.mwmax:
+                        c.mw = c.mwmax           
+                else:
+                    c.mw = pg[0] + mismatch * pmax[c.bus-1] / restcap
+                    if c.mw < c.mwmin:
+                        c.mw = c.mwmin
+                    if c.mw > c.mwmax:
+                        c.mw = c.mwmax            
                 if at.type != 3:
                     set_gen_dat(f,c,error)
             more = get_next_comp(subsys,f,error)
