@@ -19,6 +19,17 @@ def define_line_ctg(subsys, lid=None):
             more = get_next_comp(subsys,f,error)
     return ctg
 
+# Resets line status (all lines by default)
+def reset_line_status(subsys='mainsub'):
+    f = psat_comp_id(ctype.ln,1,'')
+    more = get_next_comp(subsys,f,error)
+    while more == True:
+        c = get_line_dat(f,error)
+        c.status = 1
+        set_line_dat(f,c,error)
+        more = get_next_comp(subsys,f,error)
+    return
+
 # Returns a list of values of specified property for lines
 def get_line_prop(subsys,t):
     p = []

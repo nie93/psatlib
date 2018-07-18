@@ -63,10 +63,16 @@ def apply_changes(lbl, chgtbl):
             c = get_gen_dat(chgtbl[i][2], "1", error)
             if chgtbl[i][4] == 'REP':
                 if chgtbl[i][3] == 'STATUS':
-                    c.status = 0
+                    c.status = chgtbl[i][5]
             set_gen_dat(chgtbl[i][2], "1", c, error)
         elif chgtbl[i][1] == 'LINE':
-            return
+            c = get_line_dat(chgtbl[i][2][0], chgtbl[i][2][1], chgtbl[i][2][2], 
+                             0, error)
+            if chgtbl[i][4] == 'REP':
+                if chgtbl[i][3] == 'STATUS':
+                    c.status = chgtbl[i][5]
+            set_line_dat(chgtbl[i][2][0], chgtbl[i][2][1], chgtbl[i][2][2], 
+                         0, c, error)
     return
 
 # Redispatches the generators according to the capacity (PMAX)
