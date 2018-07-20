@@ -18,34 +18,35 @@ def get_busnum(ct):
     return bn
 
 # Returns a list of values of specified property for buses
-def get_bus_prop(subsys,t):
+def get_bus_prop(subsys,t,include_type=[1,2,3,4]):
     p = []
     f = psat_comp_id(ctype.bs,1,'')
     more = get_next_comp(subsys,f,error)
     while more == True:
         c = get_bus_dat(f,error)
-        if t == 'NUMBER':
-            p.append(c.number)
-        elif t == 'NAME':
-            p.append(c.name)
-        elif t == 'BASEKV':
-            p.append(c.basekv)
-        elif t == 'TYPE':
-            p.append(c.type)
-        elif t == 'VM':
-            p.append(c.vmag)
-        elif t == 'VA':
-            p.append(c.vang)
-        elif t == 'VREAL':
-            p.append(c.vreal)
-        elif t == 'VIMAG':
-            p.append(c.vimag)
-        elif t == 'AREA':
-            p.append(c.area)
-        elif t == 'ZONE':
-            p.append(c.zone)
-        elif t == 'OWNER':
-            p.append(c.owner)
+        if c.type in include_type:
+            if t == 'NUMBER':
+                p.append(c.number)
+            elif t == 'NAME':
+                p.append(c.name)
+            elif t == 'BASEKV':
+                p.append(c.basekv)
+            elif t == 'TYPE':
+                p.append(c.type)
+            elif t == 'VM':
+                p.append(c.vmag)
+            elif t == 'VA':
+                p.append(c.vang)
+            elif t == 'VREAL':
+                p.append(c.vreal)
+            elif t == 'VIMAG':
+                p.append(c.vimag)
+            elif t == 'AREA':
+                p.append(c.area)
+            elif t == 'ZONE':
+                p.append(c.zone)
+            elif t == 'OWNER':
+                p.append(c.owner)
         more = get_next_comp(subsys,f,error)
     return p
 

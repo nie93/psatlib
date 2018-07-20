@@ -167,6 +167,9 @@ def create_snapshot(r):
     if 'Bus' in r.keys():
         for i in r['Bus']:
             l.append(get_bus_prop('mainsub', i))
+    if 'PQBus' in r.keys():
+        for i in r['PQBus']:
+            l.append(get_bus_prop('mainsub', i, [1]))
     if 'Load' in r.keys():
         for i in r['Load']:
             l.append(get_load_prop('mainsub', i))
@@ -183,6 +186,11 @@ def create_snapshot_header(r):
     if 'Bus' in r.keys():
         busnum = get_bus_prop('mainsub', 'NUMBER')
         for i in r['Bus']:
+            h.append(['Bus_' + str(val) + '_' + i  for val in busnum])
+    if 'PQBus' in r.keys():
+        busnum = get_bus_prop('mainsub', 'NUMBER', [1])
+        psat_msg(str(busnum))
+        for i in r['PQBus']:
             h.append(['Bus_' + str(val) + '_' + i  for val in busnum])
     if 'Load' in r.keys():
         busnum = get_load_prop('mainsub', 'BUS')

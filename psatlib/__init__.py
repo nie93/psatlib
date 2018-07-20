@@ -3,7 +3,7 @@ psatlib -- An imported library designed for PSAT running with Python scripts.
 
 Created by Zhijie Nie (nie@ieee.org)
 Created on:         06/11/2018
-Last Modified on:   07/18/2018
+Last Modified on:   07/19/2018
 """
 __name__ = "psatlib"
 __version__ = "0.1"
