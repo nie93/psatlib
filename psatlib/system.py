@@ -189,7 +189,6 @@ def create_snapshot_header(r):
             h.append(['Bus_' + str(val) + '_' + i  for val in busnum])
     if 'PQBus' in r.keys():
         busnum = get_bus_prop('mainsub', 'NUMBER', [1])
-        psat_msg(str(busnum))
         for i in r['PQBus']:
             h.append(['Bus_' + str(val) + '_' + i  for val in busnum])
     if 'Load' in r.keys():
