@@ -12,7 +12,6 @@ __author_email__ = "nie@ieee.org"
 __copyright__ = "Copyright (c) 2018 Zhijie Nie"
 __description__ = "psatlib is an imported library designed for PSAT running with Python scripts"
 
-# from psat_python27 import *
 import sys
 
 if sys.version_info[0] == 2:
