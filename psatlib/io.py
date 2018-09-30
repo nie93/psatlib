@@ -2,11 +2,22 @@
 
 __author__ = 'Zhijie Nie'
 
-from psat_python27 import *
+# from psat_python27 import *
+import sys
+
+if sys.version_info[0] == 2:
+    if sys.version_info[1] == 5:
+	    from psat_python25 import *
+    elif sys.version_info[1] == 7:
+	    from psat_python27 import *
+elif sys.version_info[0] == 3:
+    from psat_python34 import *
+
 import csv
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 
+error = psat_error()
 
 def ctg2xml(filename, ctg):    
     root = ET.Element('ContingencyList')

@@ -12,7 +12,20 @@ __author_email__ = "nie@ieee.org"
 __copyright__ = "Copyright (c) 2018 Zhijie Nie"
 __description__ = "psatlib is an imported library designed for PSAT running with Python scripts"
 
-from psat_python27 import *
+# from psat_python27 import *
+import sys
+
+if sys.version_info[0] == 2:
+    if sys.version_info[1] == 5:
+	    from psat_python25 import *
+    elif sys.version_info[1] == 7:
+	    from psat_python27 import *
+elif sys.version_info[0] == 3:
+    from psat_python34 import *
+
+psat_msg(str(sys.version_info[0]))
+psat_msg(str(sys.version_info[1]))
+psat_msg(str(sys.version_info[2]))
 error = psat_error()
 
 # Sets customized PSAT solving environment variables
