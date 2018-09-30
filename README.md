@@ -38,16 +38,24 @@ VSAT GUI limits 2,476 scenarios in display.
 Use `vsat_batch` for running with a large amount of scenarios.
 
 
-### Problem with Python 2.7.x Environment
-PSAT GUI returns RunTime Error or could not open `psatPython27.dll` if Python 2.7 is installed by 64-bit MSI installer.
+### Problem with Python Environment
+PSAT GUI returns RunTime Error or could not open `psatPythonXX.dll` if Python is installed by 64-bit MSI installer.
 
 Tested environment:
 * Python 2.7.15 (v2.7.15:ca079a3ea3, Apr 30 2018, 16:30:26) [MSC v.1500 64 bit (AMD64)] on win32 
+* Python 3.4.4  (v3.4.4:737efcadf5a6, Dec 20 2015, 19:28:18) [MSC v.1600 32 bit (Intel)] on win32 
+
 
 #### Solution
-Re-install Python 2.7.x with Python's [Windows x86 MSI installer](https://www.python.org/ftp/python/2.7.15/python-2.7.15.msi) instead of Windows x86-64 MSI installer, despite that your OS is installed as 64-bit system.
+Re-install Python with 
+
+* [Python 2.7.15 Windows x86 MSI installer](https://www.python.org/ftp/python/2.7.15/python-2.7.15.msi) 
+* [Python 3.4.4 Windows x86 MSI installer](https://www.python.org/ftp/python/3.4.4/python-3.4.4.msi)
+
+instead of Windows x86-64 MSI installer, despite that your OS is installed as 64-bit system.
 
 Known feasible environments:
-* Python 2.7.9 (default, Dec 10 2014, 12:24:55) [MSC v.1500 32 bit (Intel)] on win32 
+* Python 2.7.9  (default, Dec 10 2014, 12:24:55) [MSC v.1500 32 bit (Intel)] on win32 
 * Python 2.7.13 (v2.7.13:a0645b1afa1, Dec 17 2016, 20:42:59) [MSC v.1500 32 bit (Intel)] on win32 
 * Python 2.7.15 (v2.7.15:ca079a3ea3, Apr 30 2018, 16:22:17) [MSC v.1500 32 bit (Intel)] on win32 
+* Python 3.4.4  (v3.4.4:737efcadf5a6, Dec 20 2015, 19:28:18) [MSC v.1600 32 bit (Intel)] on win32 
