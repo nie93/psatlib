@@ -9,7 +9,6 @@ from UserScripts.psatlib.load import *
 from UserScripts.psatlib.system import *
 
 
-disable_engine_messages(True)
 error = psat_error()
 
 def disp_system_basics():
