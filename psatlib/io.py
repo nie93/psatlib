@@ -6,9 +6,9 @@ import sys
 
 if sys.version_info[0] == 2:
     if sys.version_info[1] == 5:
-	    from psat_python25 import *
+        from psat_python25 import *
     elif sys.version_info[1] == 7:
-	    from psat_python27 import *
+        from psat_python27 import *
 elif sys.version_info[0] == 3:
     from psat_python34 import *
 
@@ -35,13 +35,13 @@ def ctg2xml(filename, ctg):
 
     xmlstr = minidom.parseString(ET.tostring(root)).toprettyxml(encoding='utf-8', indent='  ')
     with open(filename, 'w') as f:
-        f.write(xmlstr)
+        f.write(xmlstr.decode('utf-8'))
         psat_msg('Contingencies are saved in: %s' %str(filename))
 
 def list2csv(filename, l, transpose=0, header=None):
     if transpose:
         l = list(zip(*l))
-    with open(filename, 'wb') as f:
+    with open(filename, 'w', newline="") as f:
         wr = csv.writer(f, lineterminator='\n')
         if header is not None:
             wr.writerow(header)

@@ -170,18 +170,18 @@ def redispatch(subsys='mainsub', pgref=None, transfer=None, solve=False):
 # Creates snapshot of current powerflow result
 def create_snapshot(r):
     l = []
-    if 'Solved' in r.keys():
+    if 'Solved' in list(r.keys()):
         l.append([get_solution_status()])
-    if 'Bus' in r.keys():
+    if 'Bus' in list(r.keys()):
         for i in r['Bus']:
             l.append(get_bus_prop('mainsub', i))
-    if 'PQBus' in r.keys():
+    if 'PQBus' in list(r.keys()):
         for i in r['PQBus']:
             l.append(get_bus_prop('mainsub', i, [1]))
-    if 'Load' in r.keys():
+    if 'Load' in list(r.keys()):
         for i in r['Load']:
             l.append(get_load_prop('mainsub', i))
-    if 'Line' in r.keys():
+    if 'Line' in list(r.keys()):
         for i in r['Line']:
             l.append(get_line_prop('mainsub', i))         
     flattened = [val for sublist in l for val in sublist]
@@ -189,21 +189,21 @@ def create_snapshot(r):
 
 def create_snapshot_header(r):
     h = []
-    if 'Solved' in r.keys():
+    if 'Solved' in list(r.keys()):
         h.append(['SOLVED'])
-    if 'Bus' in r.keys():
+    if 'Bus' in list(r.keys()):
         busnum = get_bus_prop('mainsub', 'NUMBER')
         for i in r['Bus']:
             h.append(['Bus_' + str(val) + '_' + i  for val in busnum])
-    if 'PQBus' in r.keys():
+    if 'PQBus' in list(r.keys()):
         busnum = get_bus_prop('mainsub', 'NUMBER', [1])
         for i in r['PQBus']:
             h.append(['Bus_' + str(val) + '_' + i  for val in busnum])
-    if 'Load' in r.keys():
+    if 'Load' in list(r.keys()):
         busnum = get_load_prop('mainsub', 'BUS')
         for i in r['Load']:
             h.append(['Load_' + str(val) + '_' + i for val in busnum])
-    if 'Line' in r.keys():
+    if 'Line' in list(r.keys()):
         frbus = get_line_prop('mainsub', 'FRBUS')
         tobus = get_line_prop('mainsub', 'TOBUS')
         lid = get_line_prop('mainsub', 'LINEID')

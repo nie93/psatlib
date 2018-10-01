@@ -39,11 +39,10 @@ Use `vsat_batch` for running with a large amount of scenarios.
 
 
 ### Problem with Python Environment
-PSAT GUI returns RunTime Error or could not open `psatPythonXX.dll` if Python is installed by 64-bit MSI installer.
+PSAT GUI returns fatal RunTime Error or could not open `psatPythonXX.dll` if Python is installed by 64-bit MSI installer.
 
-Tested environment:
+Tested problem environment:
 * Python 2.7.15 (v2.7.15:ca079a3ea3, Apr 30 2018, 16:30:26) [MSC v.1500 64 bit (AMD64)] on win32 
-* Python 3.4.4  (v3.4.4:737efcadf5a6, Dec 20 2015, 19:28:18) [MSC v.1600 32 bit (Intel)] on win32 
 
 
 #### Solution
