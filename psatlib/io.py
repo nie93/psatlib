@@ -41,7 +41,7 @@ def ctg2xml(filename, ctg):
 def list2csv(filename, l, transpose=0, header=None):
     if transpose:
         l = list(zip(*l))
-    with open(filename, 'w', newline="") as f:
+    with open(filename, 'w') as f:
         wr = csv.writer(f, lineterminator='\n')
         if header is not None:
             wr.writerow(header)
